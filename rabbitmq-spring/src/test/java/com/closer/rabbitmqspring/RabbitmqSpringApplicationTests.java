@@ -1,8 +1,11 @@
 package com.closer.rabbitmqspring;
 
+import com.closer.rabbitmqspring.entity.Order;
+import com.closer.rabbitmqspring.entity.Packaged;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.commons.logging.Logger;
-import org.junit.platform.commons.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.amqp.AmqpException;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
@@ -10,10 +13,13 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
 
 @SpringBootTest
 class RabbitmqSpringApplicationTests {
+    private Logger logger = LoggerFactory.getLogger(RabbitmqSpringApplicationTests.class);
 
     @Test
     void contextLoads() {
@@ -109,5 +115,118 @@ class RabbitmqSpringApplicationTests {
         rabbitTemplate.convertAndSend("topic002", "rabbit.amqp", "send msg topic 002 v2");
         // send(String exchange, String routingKey, Message message) Message类型
         rabbitTemplate.send("topic002", "rabbit.amqp", msg);
+        logger.info("yeah");
+    }
+
+    /**
+     * 将对象转为json字符串作为信息传递给消费者
+     * 消费者用Map接收
+     * @throws Exception
+     */
+    @Test
+    public void testSendJsonMessage() throws Exception {
+
+        Order order = new Order();
+        order.setId(1);
+        order.setName("消息订单");
+        order.setContent("描述信息");
+        ObjectMapper mapper = new ObjectMapper();
+        String json = mapper.writeValueAsString(order);
+        System.err.println("order 4 json: " + json);
+
+        MessageProperties messageProperties = new MessageProperties();
+        //这里注意一定要修改contentType为 application/json
+        messageProperties.setContentType("application/json");
+        Message message = new Message(json.getBytes(), messageProperties);
+
+        rabbitTemplate.send("topic001", "spring.order", message);
+    }
+
+
+
+    /**
+     * 将对象转为json字符串作为信息传递给消费者
+     * 消费者用entity实体类型接收，注意header中的__TypeId__ 为entity类的全类名，不能写错
+     * @throws Exception
+     */
+    @Test
+    public void testSendJavaMessage() throws Exception {
+
+        Order order = new Order();
+        order.setId(1);
+        order.setName("订单消息");
+        order.setContent("订单描述信息");
+        ObjectMapper mapper = new ObjectMapper();
+        String json = mapper.writeValueAsString(order);
+        System.err.println("order 4 json: " + json);
+
+        MessageProperties messageProperties = new MessageProperties();
+        //这里注意一定要修改contentType为 application/json
+        messageProperties.setContentType("application/json");
+        messageProperties.getHeaders().put("__TypeId__", "com.closer.rabbitmqspring.entity.Order");
+        Message message = new Message(json.getBytes(), messageProperties);
+
+        rabbitTemplate.send("topic001", "spring.order", message);
+    }
+
+
+    /**
+     * 将对象转为json字符串作为信息传递给消费者
+     * 消费者用entity实体类型接收，
+     * header中的__TypeId__ 标签可以写为自定义标签，
+     * 这个参数在javaTypeMapper中，在adapter中设置，一个自定义标签代表一个实体类
+     * @throws Exception
+     */
+    @Test
+    public void testSendMappingMessage() throws Exception {
+
+        ObjectMapper mapper = new ObjectMapper();
+
+        Order order = new Order();
+        order.setId(1);
+        order.setName("订单消息");
+        order.setContent("订单描述信息");
+
+        String json1 = mapper.writeValueAsString(order);
+        System.err.println("order 4 json: " + json1);
+
+        MessageProperties messageProperties1 = new MessageProperties();
+        //这里注意一定要修改contentType为 application/json
+        messageProperties1.setContentType("application/json");
+        messageProperties1.getHeaders().put("__TypeId__", "order");
+        Message message1 = new Message(json1.getBytes(), messageProperties1);
+        rabbitTemplate.send("topic001", "spring.order", message1);
+
+        Packaged pack = new Packaged();
+        pack.setId(2);
+        pack.setName("包裹消息");
+        pack.setDesc("包裹描述信息");
+
+        String json2 = mapper.writeValueAsString(pack);
+        System.err.println("pack 4 json: " + json2);
+
+        MessageProperties messageProperties2 = new MessageProperties();
+        //这里注意一定要修改contentType为 application/json
+        messageProperties2.setContentType("application/json");
+        messageProperties2.getHeaders().put("__TypeId__", "packaged");
+        Message message2 = new Message(json2.getBytes(), messageProperties2);
+        rabbitTemplate.send("topic001", "spring.pack", message2);
+    }
+
+    @Test
+    public void testSendExtConverterMessage() throws Exception {
+//			byte[] body = Files.readAllBytes(Paths.get("D:\\IDEA\\rabbitmq-redis\\rabbitmq-spring\\src\\main\\resources", "pic.jpg"));
+//			MessageProperties messageProperties = new MessageProperties();
+//			messageProperties.setContentType("image/png");
+//			messageProperties.getHeaders().put("extName", "png");
+//			Message message = new Message(body, messageProperties);
+//			// exchange为空走default exchange， 这时queue对routingKey全匹配
+//			rabbitTemplate.send("", "image_queue", message);
+
+        byte[] body = Files.readAllBytes(Paths.get("D:\\IDEA\\rabbitmq-redis\\rabbitmq-spring\\src\\main\\resources", "testpdf.pdf"));
+        MessageProperties messageProperties = new MessageProperties();
+        messageProperties.setContentType("application/pdf");
+        Message message = new Message(body, messageProperties);
+        rabbitTemplate.send("", "pdf_queue", message);
     }
 }

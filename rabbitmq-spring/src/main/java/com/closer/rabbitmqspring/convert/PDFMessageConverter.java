@@ -24,7 +24,7 @@ public class PDFMessageConverter implements MessageConverter {
 		
 		byte[] body = message.getBody();
 		String fileName = UUID.randomUUID().toString();
-		String path = "d:/010_test/" + fileName + ".pdf";
+		String path = "D://IDEA/rabbitmq-redis/rabbitmq-spring/src/main/resources/" + fileName + ".pdf";
 		File f = new File(path);
 		try {
 			Files.copy(new ByteArrayInputStream(body), f.toPath());

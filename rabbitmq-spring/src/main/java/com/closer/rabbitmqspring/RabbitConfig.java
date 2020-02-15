@@ -16,6 +16,7 @@ import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
 import org.springframework.amqp.rabbit.listener.api.ChannelAwareMessageListener;
 import org.springframework.amqp.support.ConsumerTagStrategy;
 import org.springframework.amqp.support.converter.ContentTypeDelegatingMessageConverter;
+import org.springframework.amqp.support.converter.DefaultJackson2JavaTypeMapper;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -165,22 +166,24 @@ public class RabbitConfig {
          // 1 适配器方式. 默认是有自己的方法名字的：handleMessage
          // 可以自己指定一个方法的名字: consumeMessage
          // 也可以添加一个转换器: 从字节数组转换为String
+         //  -> testSendMessage ,testSendMessage_v2
          /*MessageListenerAdapter adapter = new MessageListenerAdapter(new MessageDelegate());
          adapter.setDefaultListenerMethod("consumeMessage");
          adapter.setMessageConverter(new TextMessageConverter());
          container.setMessageListener(adapter);*/
 
          // 2 适配器方式: 我们的队列名称 和 方法名称 也可以进行一一的匹配
-         MessageListenerAdapter adapter = new MessageListenerAdapter(new MessageDelegate());
+         // -> testSendMessage ,testSendMessage_v2
+         /*MessageListenerAdapter adapter = new MessageListenerAdapter(new MessageDelegate());
          adapter.setMessageConverter(new TextMessageConverter());
          Map<String, String> queueOrTagToMethodName = new HashMap<>();
          queueOrTagToMethodName.put("queue001", "method1");
          queueOrTagToMethodName.put("queue002", "method2");
          adapter.setQueueOrTagToMethodName(queueOrTagToMethodName);
-         container.setMessageListener(adapter);
+         container.setMessageListener(adapter);*/
 
-        // 1.1 支持json格式的转换器
 
+        // 1.1 支持json格式的转换器   -> testSendJsonMessage
          /*MessageListenerAdapter adapter = new MessageListenerAdapter(new MessageDelegate());
          adapter.setDefaultListenerMethod("consumeMessage");
 
@@ -190,48 +193,44 @@ public class RabbitConfig {
          container.setMessageListener(adapter);*/
 
 
-
-
-        // 1.2 DefaultJackson2JavaTypeMapper & Jackson2JsonMessageConverter 支持java对象转换
-        /*
-         MessageListenerAdapter adapter = new MessageListenerAdapter(new MessageDelegate());
+        // 1.2 DefaultJackson2JavaTypeMapper & Jackson2JsonMessageConverter 支持java对象转换  -> testSendJavaMessage
+        /* MessageListenerAdapter adapter = new MessageListenerAdapter(new MessageDelegate());
          adapter.setDefaultListenerMethod("consumeMessage");
 
          Jackson2JsonMessageConverter jackson2JsonMessageConverter = new Jackson2JsonMessageConverter();
 
+         // 消息消费者能将信息包装成entity实体类
          DefaultJackson2JavaTypeMapper javaTypeMapper = new DefaultJackson2JavaTypeMapper();
          jackson2JsonMessageConverter.setJavaTypeMapper(javaTypeMapper);
 
          adapter.setMessageConverter(jackson2JsonMessageConverter);
-         container.setMessageListener(adapter);
-         */
+         container.setMessageListener(adapter);*/
 
 
-        //1.3 DefaultJackson2JavaTypeMapper & Jackson2JsonMessageConverter 支持java对象多映射转换
-        /*
-         MessageListenerAdapter adapter = new MessageListenerAdapter(new MessageDelegate());
+        //1.3 DefaultJackson2JavaTypeMapper & Jackson2JsonMessageConverter 支持java对象多映射转换  -> testSendMappingMessage
+         /*MessageListenerAdapter adapter = new MessageListenerAdapter(new MessageDelegate());
          adapter.setDefaultListenerMethod("consumeMessage");
          Jackson2JsonMessageConverter jackson2JsonMessageConverter = new Jackson2JsonMessageConverter();
          DefaultJackson2JavaTypeMapper javaTypeMapper = new DefaultJackson2JavaTypeMapper();
 
-         Map<String, Class<?>> idClassMapping = new HashMap<String, Class<?>>();
-         idClassMapping.put("order", com.bfxy.spring.entity.Order.class);
-         idClassMapping.put("packaged", com.bfxy.spring.entity.Packaged.class);
+         // __TypeId__ 自定义标签 对应实体类
+         Map<String, Class<?>> idClassMapping = new HashMap<>();
+         idClassMapping.put("order", com.closer.rabbitmqspring.entity.Order.class);
+         idClassMapping.put("packaged", com.closer.rabbitmqspring.entity.Packaged.class);
 
          javaTypeMapper.setIdClassMapping(idClassMapping);
 
          jackson2JsonMessageConverter.setJavaTypeMapper(javaTypeMapper);
          adapter.setMessageConverter(jackson2JsonMessageConverter);
-         container.setMessageListener(adapter);
-         */
+         container.setMessageListener(adapter);*/
 
-        //1.4 ext convert
+        //1.4 ext convert  对应全部Test
 
-        /*MessageListenerAdapter adapter = new MessageListenerAdapter(new MessageDelegate());
-        adapter.setDefaultListenerMethod("consumeMessage");*/
+        MessageListenerAdapter adapter = new MessageListenerAdapter(new MessageDelegate());
+        adapter.setDefaultListenerMethod("consumeMessage");
 
         //全局的转换器:
-        /*ContentTypeDelegatingMessageConverter convert = new ContentTypeDelegatingMessageConverter();
+        ContentTypeDelegatingMessageConverter convert = new ContentTypeDelegatingMessageConverter();
 
         TextMessageConverter textConvert = new TextMessageConverter();
         convert.addDelegate("text", textConvert);
@@ -240,6 +239,13 @@ public class RabbitConfig {
         convert.addDelegate("text/plain", textConvert);
 
         Jackson2JsonMessageConverter jsonConvert = new Jackson2JsonMessageConverter();
+        DefaultJackson2JavaTypeMapper javaTypeMapper = new DefaultJackson2JavaTypeMapper();
+        Map<String, Class<?>> idClassMapping = new HashMap<>();
+        idClassMapping.put("order", com.closer.rabbitmqspring.entity.Order.class);
+        idClassMapping.put("packaged", com.closer.rabbitmqspring.entity.Packaged.class);
+        javaTypeMapper.setIdClassMapping(idClassMapping);
+        jsonConvert.setJavaTypeMapper(javaTypeMapper);
+
         convert.addDelegate("json", jsonConvert);
         convert.addDelegate("application/json", jsonConvert);
 
@@ -252,7 +258,7 @@ public class RabbitConfig {
 
 
         adapter.setMessageConverter(convert);
-        container.setMessageListener(adapter);*/
+        container.setMessageListener(adapter);
 
         return container;
 

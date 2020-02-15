@@ -4,7 +4,7 @@ package com.closer.rabbitmqspring.entity;
 import lombok.*;
 
 /**
- * <p>Package</p>
+ * <p>Packaged</p>
  * <p>description</p>
  *
  * @author closer
@@ -18,7 +18,7 @@ import lombok.*;
 @NoArgsConstructor
 @ToString
 @EqualsAndHashCode
-public class Package {
+public class Packaged {
     private Integer id;
     private String name;
     private String desc;

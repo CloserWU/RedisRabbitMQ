@@ -1,5 +1,11 @@
 package com.closer.rabbitmqspring.adapter;
 
+import com.closer.rabbitmqspring.entity.Order;
+import com.closer.rabbitmqspring.entity.Packaged;
+
+import java.io.File;
+import java.util.Map;
+
 /**
  * <p>MessageDelegate</p>
  * <p>
@@ -32,6 +38,27 @@ public class MessageDelegate {
 
     public void method2(String messageBody) {
         System.err.println("method2 收到消息内容:" + messageBody);
+    }
+
+    public void consumeMessage(Map messageBody) {
+        System.err.println("map方法, 消息内容:" + messageBody);
+    }
+
+
+    public void consumeMessage(Order order) {
+        System.err.println("order对象, 消息内容, id: " + order.getId() +
+                ", name: " + order.getName() +
+                ", content: "+ order.getContent());
+    }
+
+    public void consumeMessage(Packaged pack) {
+        System.err.println("package对象, 消息内容, id: " + pack.getId() +
+                ", name: " + pack.getName() +
+                ", content: "+ pack.getDesc());
+    }
+
+    public void consumeMessage(File file) {
+        System.err.println("文件对象 方法, 消息内容:" + file.getName());
     }
 }
 
