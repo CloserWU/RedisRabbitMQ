@@ -15,6 +15,9 @@ target/
 
 ### IntelliJ IDEA ###
 **/**.iml
+**/mvnw
+**/mvnw.cmd
+**/.gitignore
 **/target
 **/.mvn
 .idea
