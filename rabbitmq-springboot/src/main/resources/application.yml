@@ -13,3 +13,20 @@ spring:
     # 在发送消息时对template进行配置mandatory=true保证监听有效
     template:
       mandatory: true
+
+    # 消费端
+    listener:
+      simple:
+        acknowledge-mode: manual
+        concurrency: 5
+        max-concurrency: 10
+      order:
+        queue:
+          name: queue-2
+          durable: true
+        exchange:
+          name: exchange-1
+          durable: true
+          type: topic
+          ignoreDeclarationExceptions: true
+        key: springboot.#

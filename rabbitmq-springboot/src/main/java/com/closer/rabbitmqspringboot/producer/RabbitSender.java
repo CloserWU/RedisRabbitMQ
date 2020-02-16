@@ -1,6 +1,7 @@
 package com.closer.rabbitmqspringboot.producer;
 
 
+import com.closer.rabbitmqspringboot.entitiy.Order;
 import org.springframework.amqp.rabbit.connection.CorrelationData;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.core.RabbitTemplate.ConfirmCallback;
@@ -16,7 +17,9 @@ import java.util.UUID;
 
 /**
  * <p>RabbitSender</p>
- * <p>description</p>
+ * <p>
+ *     生产端
+ * </p>
  *
  * @author closer
  * @version 1.0.0
@@ -78,5 +81,12 @@ public class RabbitSender {
         rabbitTemplate.convertAndSend("exchange-1", "springboot.hello", msg, data);
     }
 
+
+    public void sendOrder(Order message) throws Exception {
+        CorrelationData data = new CorrelationData(UUID.randomUUID().toString());
+        rabbitTemplate.setConfirmCallback(confirmCallback);
+        rabbitTemplate.setReturnCallback(returnCallback);
+        rabbitTemplate.convertAndSend("exchange-1", "springboot.hello.topic", message, data);
+    }
 }
 

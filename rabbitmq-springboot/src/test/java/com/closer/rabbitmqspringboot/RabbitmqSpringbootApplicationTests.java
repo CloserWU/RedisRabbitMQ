@@ -1,5 +1,6 @@
 package com.closer.rabbitmqspringboot;
 
+import com.closer.rabbitmqspringboot.entitiy.Order;
 import com.closer.rabbitmqspringboot.producer.RabbitSender;
 import org.junit.jupiter.api.Test;
 import org.springframework.amqp.core.Correlation;
@@ -32,6 +33,12 @@ class RabbitmqSpringbootApplicationTests {
         properties.put("number", "123456");
         properties.put("send_time", format.format(new Date()));
         rabbitSender.send("hello rabbitmq springboot", properties);
+    }
+
+    @Test
+    public void testSenderOrder() throws Exception {
+        Order o = new Order("001", "order1");
+        rabbitSender.sendOrder(o);
     }
 
 }
