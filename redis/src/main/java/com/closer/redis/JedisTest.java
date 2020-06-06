@@ -16,7 +16,7 @@ import java.util.*;
 public class JedisTest {
     @Test
     public void test() {
-        Jedis jedis = new Jedis("47.98.52.193", 6379);
+        Jedis jedis = new Jedis("59.110.124.254", 6379);
         jedis.auth("123456");
         if ("PONG".equals(jedis.ping())) {
             Set<String> keys = jedis.keys("*");
