@@ -50,6 +50,8 @@ public class Producer {
         /*
          *   deliveryMode 2 持久化消息
          *   expiration millis 10s后没有被消费，此消息会被移除
+         *  若deliveryMode 1，则10s没有接收，就转到DLX，详见DLX
+         *  可以在15672管理端的队列中查看get message
          */
         Map<String, Object> headers = new HashMap<>();
         headers.put("my1", "111");

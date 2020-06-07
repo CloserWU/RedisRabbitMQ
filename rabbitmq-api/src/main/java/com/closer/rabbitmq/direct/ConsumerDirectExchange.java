@@ -39,14 +39,17 @@ public class ConsumerDirectExchange {
 //        #
         channel.exchangeDeclare(exchangeName, exchangeType, true, false, false, null);
         channel.queueDeclare(queueName, false, false, false, null);
+        // 指明了只有在指定的exchange上，并且是指定的routingKey的消息才会被接收；其他情况一概不接收
         channel.queueBind(queueName, exchangeName, routingKey);
 //       #
 
-        channel.basicConsume(queueName, true, new DefaultConsumer(channel){
+        channel.basicConsume(queueName, false, new DefaultConsumer(channel){
             @Override
             public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
                 String routingKey = envelope.getRoutingKey();
+                System.out.println(routingKey);
                 String contentType = properties.getContentType();
+                System.out.println(contentType);
                 long deliveryTag = envelope.getDeliveryTag();
                 channel.basicAck(deliveryTag, false);
                 System.out.println(new String(body));

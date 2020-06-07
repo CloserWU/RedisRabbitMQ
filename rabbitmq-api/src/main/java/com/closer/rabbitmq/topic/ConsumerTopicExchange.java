@@ -46,7 +46,7 @@ public class ConsumerTopicExchange {
          * 本测试中 当此一次用 rK1，第二次用rk时，还是能全部显示msg
          * 因为一个exchange会绑定多个routingKey
          */
-        channel.queueBind(queueName, exchangeName, routingKey);
+        channel.queueBind(queueName, exchangeName, routingKey1);
 
 
         DefaultConsumer consumer = new DefaultConsumer(channel) {

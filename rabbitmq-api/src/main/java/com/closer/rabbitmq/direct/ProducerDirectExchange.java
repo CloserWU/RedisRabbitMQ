@@ -38,7 +38,8 @@ public class ProducerDirectExchange {
 
         String msg = "test babababababab";
         channel.basicPublish(exchangeName, routingKey, null, msg.getBytes());
-
+        // 这条信息将发送不过去，因为指定的routingKey错误
+        channel.basicPublish(exchangeName, "test_direct_queue", null, "hello".getBytes());
         channel.close();
         connection.close();
     }

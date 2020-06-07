@@ -30,7 +30,10 @@ public class Producer {
         String routingKey = "return.save";
         String routingKeyErr = "abc.save";
 
+        // 指定消息的确认模式
+        AMQP.Confirm.SelectOk select = channel.confirmSelect();
 
+        //消 息传递失败返回机制
         channel.addReturnListener(new ReturnListener() {
             @Override
             public void handleReturn(
@@ -52,10 +55,23 @@ public class Producer {
             }
         });
 
-        // 第三个参数mandatory true  监听器会接收到路由不可达的消息，然后进行后续处理。
+        // 确认模式，到达queue即为成功
+        channel.addConfirmListener(new ConfirmListener() {
+            @Override
+            public void handleAck(long deliveryTag, boolean multiple) throws IOException {
+                System.out.println("ack " + deliveryTag);
+            }
+
+            @Override
+            public void handleNack(long deliveryTag, boolean multiple) throws IOException {
+                System.out.println("no ack " + deliveryTag);
+            }
+        });
+
+        // 第三个参数mandatory true  监听器会接收到路由不后可达的消息，然进行后续处理。
         // 若为false， 那么broker端将自动删除该消息，将没有返回
-        channel.basicPublish(exchangeName, routingKey, true, null, "return mess".getBytes());
-        channel.basicPublish(exchangeName, routingKeyErr, true, null, "return mess".getBytes());
+        channel.basicPublish(exchangeName, routingKey, true, null, "no return mess".getBytes());
+        channel.basicPublish(exchangeName, routingKeyErr, true, null, "return mess1".getBytes());
 
     }
 }

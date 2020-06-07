@@ -52,7 +52,9 @@ public class MyConsumer extends DefaultConsumer {
         if ( properties.getHeaders() != null && (Integer) properties.getHeaders().get("nums") == 0) {
             // basicNack(deliveryType, multiple, requeue)
             // 失败消息重回队列
-            channel.basicNack(envelope.getDeliveryTag(), false, true);
+            // 重回之后，因为consumer在监听队列，只要队列中有东西，就一直取，但是本例中取出的依然无法ack，就会进入死循环
+            // 若重回设为false，则消息进入死信队列
+            channel.basicNack(envelope.getDeliveryTag(), false, false);
         } else {
             // basicAck(tag, 是否批量签收);
             channel.basicAck(envelope.getDeliveryTag(), false);

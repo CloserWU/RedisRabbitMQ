@@ -48,6 +48,8 @@ public class Consumer {
 
         channel.exchangeDeclare(exchangeName, "topic", true, false, null);
         Map<String, Object> arguments = new HashMap<>();
+        // 当有这个参数时，dlx.exchange这个队列为DLX
+        // 同时test_dlx_queue会有DLX标记，即它有死信机制
         arguments.put("x-dead-letter-exchange", "dlx.exchange");
         // arguments 要声明到queue上
         channel.queueDeclare(queueName, true, false, false, arguments);

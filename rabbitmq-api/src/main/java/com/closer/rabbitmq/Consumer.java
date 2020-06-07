@@ -50,9 +50,9 @@ public class Consumer {
         /*
          *  channel.basicConsume(queueName, autoAck, Consumer)
          *  队列名
-         *  是否自动签收
+         *  是否自动签收 false时需要手动签收
          */
-        channel.basicConsume("test_queue", true, new DefaultConsumer(channel) {
+        channel.basicConsume("test_queue", false, new DefaultConsumer(channel) {
             @Override
             public void handleDelivery(
                     String consumerTag,
@@ -63,6 +63,7 @@ public class Consumer {
                 String routingKey = envelope.getRoutingKey();
                 String contentType = properties.getContentType();
                 long deliveryTag = envelope.getDeliveryTag();
+                // 手动签收
                 channel.basicAck(deliveryTag, false);
                 Response response = mapper.readValue(new String(body), Response.class);
 //                {"code":200,"body":{"age":20,"name":"wushuai","email":"@163.com","score":360.0}}
