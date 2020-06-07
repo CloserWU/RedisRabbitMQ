@@ -17,8 +17,8 @@ public class JavaSentinelPoolTest {
     public void test() {
         JavaSentinelPoolTest o = new JavaSentinelPoolTest();
         JedisSentinelPoolUtil.getJedisSentinelPool("mymaster");
-//        HostAndPort master = JedisSentinelPoolUtil.getMaster("mymaster");
-//        System.out.println(master);
+        HostAndPort master = JedisSentinelPoolUtil.getMaster("mymaster");
+        System.out.println(master);
         HostAndPort slave = JedisSentinelPoolUtil.getOneSlave("mymaster");
         System.out.println(slave);
 

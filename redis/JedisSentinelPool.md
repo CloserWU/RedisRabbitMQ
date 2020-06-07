@@ -1,3 +1,54 @@
+## Jedis根据哨兵获得主节点和辅节点信息
+
+1. 应单例模式创建JedisSentinelPool对象
+
+2. 主节点：
+
+   jedisSentinelPool调用getCurrentHostMaster()得到当前主节点信息
+
+3. 父节点：
+
+   注意到Jedis对象有一个方法sentinelSlaves(String masterName)
+
+   分析可得，由Sentinel创建的Jedis对象可以通过此方法获得辅节点信息
+
+   返回值是List\<Map\<String, String>>;
+
+   > 相当于通过命令行
+   >
+   > ```shell
+   > redis-cli -p 26379
+   > >>> sentinel master mymaster
+   > >>> sentinel slaves mymaster
+   > ```
+   >
+   > 获得到的信息
+   >
+   > [格式详见](https://javadoc.io/doc/redis.clients/jedis/latest/redis/clients/jedis/Jedis.html)
+
+
+
+## 坑位
+
+每次获取辅节点得到的是127.0.0.1的地址，并且程序执行后，主节点就down了。
+
+经排查，是sentinel.conf的配置问题，官方配置全而细，一不小心就出错。[直接创建最纯净的配置](https://redis.io/topics/sentinel)
+
+```SHELL
+port 26379
+sentinel monitor mymaster <公网IP> 6379 2
+sentinel down-after-milliseconds mymaster 5000
+sentinel failover-timeout mymaster 60000
+sentinel parallel-syncs mymaster 1
+```
+
+然后把redis.conf中的所有ip都改为**公网ip**。问题解决
+
+
+
+## 代码
+
+```java
 package com.closer.redis;
 
 
@@ -8,15 +59,13 @@ import redis.clients.jedis.*;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.*;
 
 /**
  * <p>JedisSentinelPoolUtil</p>
  * <p>description</p>
  *
- * @author wushuai
+ * @author ws
  * @version 1.0.0
  * @date 2020-06-06 15:09
  */
@@ -24,9 +73,9 @@ public class JedisSentinelPoolUtil {
 
     private static volatile JedisSentinelPool jedisSentinelPool = null;
     private static Set<String> sentinels = new HashSet<>(Arrays.asList(
-            "59.110.124.254:26379",
-            "59.110.124.254:26380",
-            "59.110.124.254:26381"
+            "<IP>:26379",
+            "<IP>:26380",
+            "<IP>:26381"
     ));
     private static Logger logger = LoggerFactory.getLogger(JedisSentinelPoolUtil.class);
 
@@ -43,7 +92,6 @@ public class JedisSentinelPoolUtil {
      * @return
      */
     public static JedisSentinelPool getJedisSentinelPool(String masterName) {
-        System.out.println("-1");
         if (jedisSentinelPool == null) {
             synchronized (JedisSentinelPoolUtil.class) {
                 if (jedisSentinelPool == null) {
@@ -55,7 +103,6 @@ public class JedisSentinelPoolUtil {
                 }
             }
         }
-        System.out.println("0");
         return jedisSentinelPool;
     }
 
@@ -65,7 +112,6 @@ public class JedisSentinelPoolUtil {
      * @return
      */
     public static HostAndPort getMasterRaw(String masterName) {
-        System.out.println("1");
         HostAndPort master = null;
         boolean sentinelAvailable = false;
         for (String sentinelString : sentinels) {
@@ -161,3 +207,6 @@ public class JedisSentinelPoolUtil {
         }
     }
 }
+
+```
+
