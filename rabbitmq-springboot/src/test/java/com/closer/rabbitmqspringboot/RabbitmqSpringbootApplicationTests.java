@@ -31,14 +31,19 @@ class RabbitmqSpringbootApplicationTests {
     public void testSender() throws Exception {
         Map<String, Object> properties = new HashMap<>();
         properties.put("number", "123456");
+        properties.put("deliveryMode", "1");
+        properties.put("expiration", "50000");
         properties.put("send_time", format.format(new Date()));
         rabbitSender.send("hello rabbitmq springboot", properties);
     }
 
     @Test
     public void testSenderOrder() throws Exception {
+        Map<String, Object> properties = new HashMap<>();
+        properties.put("number", "123456");
+        properties.put("send_time", format.format(new Date()));
         Order o = new Order("001", "order1");
-        rabbitSender.sendOrder(o);
+        rabbitSender.sendOrder(o, properties);
     }
 
 }

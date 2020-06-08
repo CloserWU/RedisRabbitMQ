@@ -26,5 +26,12 @@ public class Order implements Serializable {
     private String id;
     private String name;
 
+    @Override
+    public String toString() {
+        return "Order{" +
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                '}';
+    }
 }
 
